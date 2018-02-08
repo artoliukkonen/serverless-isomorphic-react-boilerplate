@@ -1,0 +1,9 @@
+{
+  "name": "ServerlessWeb.site",
+  "short_name": "ServerlessWebsite",
+  "theme_color": "#444446",
+  "background_color": "#444446",
+  "start_url": "https://serverlessweb.site/",
+  "display": "standalone",
+  "gcm_sender_id": ""
+}

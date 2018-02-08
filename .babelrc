@@ -1,0 +1,10 @@
+{
+  "presets": ["env", "react", "stage-2"],
+  "plugins": [
+    "syntax-dynamic-import",
+    "transform-class-properties",
+    ["import-inspector", {
+      "serverSideRequirePath": true
+    }]
+  ]
+}

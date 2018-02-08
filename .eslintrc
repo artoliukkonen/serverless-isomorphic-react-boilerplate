@@ -1,0 +1,12 @@
+{
+  "extends": "airbnb",
+  "env": {
+    "node": true,
+    "jest": true,
+    "browser": true,
+    "es6": true
+  },
+  "rules": {
+    "react/forbid-prop-types": ["error", { "forbid": ["any"] }]
+  }
+}

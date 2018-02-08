@@ -1,0 +1,137 @@
+service: serverless-react-demo
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  region: eu-west-1
+  memorySize: 256
+  timeout: 30
+  environment:
+    SERVERLESS_STAGE: ${opt:stage, self:provider.stage}
+    SERVERLESS_PROJECT: ${self:service}
+    SERVERLESS_REGION: ${opt:region, self:provider.region}
+
+package:
+  exclude:
+    - tests/**
+    - coverage
+    - build/static/**
+
+functions:
+  webapp:
+    handler: handler.webapp
+    warmup: true
+    events:
+      - http:
+          path: /
+          method: get
+      - http:
+          path: /{proxy+}
+          method: get
+
+  api:
+    handler: handler.request
+    warmup: true
+    events:
+      - http:
+          path: /api/{proxy+}
+          method: get
+
+  static:
+    handler: handler.staticFile
+    events:
+      - http:
+          path: /public/{proxy+}
+          method: get
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-plugin-warmup
+
+
+custom:
+  webpack: ./webpack/webpack.sls.config.js
+
+resources:
+  Resources:
+    StaticBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-assets
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+        LifecycleConfiguration:
+          Rules:
+            - Id: S3ExpireMonthly
+              ExpirationInDays: 30
+              Status: Enabled
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - 'GET'
+              AllowedOrigins: ['*']
+              AllowedHeaders: ['*']
+    APIRole:
+      Type: AWS::IAM::Role
+      Properties:
+        Policies:
+          - PolicyName: 'ServiceWorkerAPI'
+            PolicyDocument:
+              Statement:
+                - Effect: 'Allow'
+                  Action:
+                    - 's3:GetObject'
+                  Resource:
+                    - Fn::Join:
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - Ref: StaticBucket
+                        - '/static-low-cache/sw.js'
+        AssumeRolePolicyDocument:
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+    ServiceWorkerAPI:
+      Type: AWS::ApiGateway::Resource
+      Properties:
+        ParentId:
+          Fn::GetAtt: [ ApiGatewayRestApi, 'RootResourceId' ]
+        PathPart: 'sw.js'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+    ServiceWorkerMethod:
+      Type: 'AWS::ApiGateway::Method'
+      Properties:
+        AuthorizationType: 'NONE'
+        HttpMethod: 'GET'
+        MethodResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Content-Type: true
+        Integration:
+          IntegrationResponses:
+            - StatusCode: 200
+              ResponseParameters:
+                method.response.header.Content-Type: integration.response.header.Content-Type
+          Type: 'AWS'
+          IntegrationHttpMethod: 'GET'
+          Credentials:
+            Fn::GetAtt: [ APIRole, 'Arn' ]
+          Uri:
+            Fn::Join:
+              - ''
+              - - 'arn:aws:apigateway:'
+                - Ref: AWS::Region
+                - ':s3:path/'
+                - Ref: StaticBucket
+                - '/static-low-cache/sw.js'
+        ResourceId:
+          Ref: ServiceWorkerAPI
+        RestApiId:
+          Ref: ApiGatewayRestApi
