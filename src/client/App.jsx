@@ -35,24 +35,7 @@ class ScrollToTop extends React.Component {
   }
 
   componentDidUpdate() {
-    this.scrollTo(window, 0, 200);
-  }
-
-  scrollTo(element, to, duration) {
-    let start = element.scrollTop,
-        change = to - start,
-        currentTime = 0,
-        increment = 20;
-
-    const animateScroll = () => {       
-      currentTime += increment;
-      const val = Math.easeInOutQuad(currentTime, start, change, duration);
-      element.scrollTo(0, val);
-      if(currentTime < duration) {
-        setTimeout(animateScroll, increment);
-      }
-    };
-    animateScroll();
+    window.scrollTo(0, 0);
   }
 
   render() {
