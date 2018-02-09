@@ -18,7 +18,7 @@ module.exports = {
   },
   output: {
     libraryTarget: 'commonjs-module',
-    path: path.resolve(__dirname, 'build-sls/'),
+    path: path.resolve(__dirname, '../build-sls/'),
     filename: '[name].js',
   },
   module: {
