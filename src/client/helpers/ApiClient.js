@@ -6,7 +6,8 @@ function formatUrl(path, local = false) {
   let adjustedPath = path[0] !== '/' ? `/${path}` : path;
 
   if (!local) {
-    adjustedPath = `https://4mqk0wzefc.execute-api.eu-west-1.amazonaws.com/dev/api${adjustedPath}`;
+    // TODO: Get this path from env / sls config
+    adjustedPath = `https://0vznfv7sr9.execute-api.eu-west-1.amazonaws.com/dev/api${adjustedPath}`;
   }
 
   return adjustedPath;

@@ -5,6 +5,7 @@
 import 'isomorphic-fetch';
 import crypto from 'crypto';
 
+// TODO: Get this path from env / config
 const API_BASE = 'https://jsonplaceholder.typicode.com/';
 
 const CACHE_TIME = 5; // minutes
